@@ -38,7 +38,7 @@ pub fn build(b: *std.build.Builder) void {
     b.installArtifact(lib);
 
     const zstdcli = b.addExecutable(.{
-        .name = "zstd",
+        .name = "zstd-cli",
         .target = target,
         .optimize = optimize,
     });
