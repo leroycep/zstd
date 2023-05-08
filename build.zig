@@ -35,7 +35,7 @@ pub fn build(b: *std.build.Builder) void {
             ".in",
         },
     });
-    lib.install();
+    b.installArtifact(lib);
 
     const zstdcli = b.addExecutable(.{
         .name = "zstd",
@@ -45,9 +45,9 @@ pub fn build(b: *std.build.Builder) void {
     zstdcli.linkLibrary(lib);
     zstdcli.addCSourceFiles(&cli_sources, &.{});
     zstdcli.addCSourceFiles(&dictbuilder_sources, &.{});
-    zstdcli.install();
+    b.installArtifact(zstdcli);
 
-    const run = zstdcli.run();
+    const run = b.addRunArtifact(zstdcli);
     if (b.args) |args| {
         run.addArgs(args);
     }
