@@ -1,8 +1,17 @@
 const std = @import("std");
 
-pub fn build(b: *std.build.Builder) void {
+pub fn build(b: *std.build.Builder) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    const enable_compression = b.option(bool, "ZSTD_LIB_COMPRESSION", "Enable compression API (default: true)") orelse true;
+    const enable_decompression = b.option(bool, "ZSTD_LIB_DECOMPRESSION", "Enable decompression API (default: true)") orelse true;
+    const enable_dictbuilder = b.option(bool, "ZSTD_LIB_DICTBUILDER", "Enable dictbuilder API. Requires ZSTD_LIB_COMPRESSION. (default: true)") orelse true;
+
+    if (enable_dictbuilder and !enable_compression) {
+        std.debug.print("Error: ZSTD_LIB_DICTBUILDER requires ZSTD_LIB_COMPRESSION\n", .{});
+        return error.InvalidOptions;
+    }
 
     const lib = b.addStaticLibrary(.{
         .name = "zstd",
@@ -12,10 +21,7 @@ pub fn build(b: *std.build.Builder) void {
     lib.linkLibC();
     lib.addIncludePath("lib");
     lib.addIncludePath("lib/legacy");
-    lib.addCSourceFiles(&decompress_sources, &.{});
-    lib.addAssemblyFile("lib/decompress/huf_decompress_amd64.S");
     lib.addCSourceFiles(&common_sources, &.{});
-    lib.addCSourceFiles(&compress_sources, &.{});
     lib.installHeadersDirectoryOptions(.{
         .source_dir = "lib/legacy",
         .install_dir = .header,
@@ -35,6 +41,16 @@ pub fn build(b: *std.build.Builder) void {
             ".in",
         },
     });
+    if (enable_compression) {
+        lib.addCSourceFiles(&compress_sources, &.{});
+    }
+    if (enable_decompression) {
+        lib.addAssemblyFile("lib/decompress/huf_decompress_amd64.S");
+        lib.addCSourceFiles(&decompress_sources, &.{});
+    }
+    if (enable_dictbuilder) {
+        lib.addCSourceFiles(&dictbuilder_sources, &.{});
+    }
     b.installArtifact(lib);
 
     const zstdcli = b.addExecutable(.{
@@ -44,7 +60,6 @@ pub fn build(b: *std.build.Builder) void {
     });
     zstdcli.linkLibrary(lib);
     zstdcli.addCSourceFiles(&cli_sources, &.{});
-    zstdcli.addCSourceFiles(&dictbuilder_sources, &.{});
     b.installArtifact(zstdcli);
 
     const run = b.addRunArtifact(zstdcli);
