@@ -23,7 +23,7 @@ pub fn build(b: *std.build.Builder) !void {
     lib.addIncludePath("lib/legacy");
     lib.addCSourceFiles(&common_sources, &.{});
     lib.installHeadersDirectoryOptions(.{
-        .source_dir = "lib/legacy",
+        .source_dir = .{ .path = "lib/legacy" },
         .install_dir = .header,
         .install_subdir = "",
         .exclude_extensions = &.{
@@ -31,7 +31,7 @@ pub fn build(b: *std.build.Builder) !void {
         },
     });
     lib.installHeadersDirectoryOptions(.{
-        .source_dir = "lib",
+        .source_dir = .{ .path = "lib" },
         .install_dir = .header,
         .install_subdir = "",
         .exclude_extensions = &.{
