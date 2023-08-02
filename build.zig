@@ -19,8 +19,6 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     lib.linkLibC();
-    lib.addIncludePath("lib");
-    lib.addIncludePath("lib/legacy");
     lib.addCSourceFiles(&common_sources, &.{});
     lib.installHeadersDirectoryOptions(.{
         .source_dir = .{ .path = "lib/legacy" },
@@ -45,7 +43,7 @@ pub fn build(b: *std.build.Builder) !void {
         lib.addCSourceFiles(&compress_sources, &.{});
     }
     if (enable_decompression) {
-        lib.addAssemblyFile("lib/decompress/huf_decompress_amd64.S");
+        lib.addAssemblyFile(.{ .path = "lib/decompress/huf_decompress_amd64.S" });
         lib.addCSourceFiles(&decompress_sources, &.{});
     }
     if (enable_dictbuilder) {
