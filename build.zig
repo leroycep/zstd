@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn build(b: *std.build.Builder) !void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -19,7 +19,7 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     lib.linkLibC();
-    lib.addCSourceFiles(&common_sources, &.{});
+    lib.addCSourceFiles(.{ .files = &common_sources });
     lib.installHeadersDirectoryOptions(.{
         .source_dir = .{ .path = "lib/legacy" },
         .install_dir = .header,
@@ -40,14 +40,14 @@ pub fn build(b: *std.build.Builder) !void {
         },
     });
     if (enable_compression) {
-        lib.addCSourceFiles(&compress_sources, &.{});
+        lib.addCSourceFiles(.{ .files = &compress_sources });
     }
     if (enable_decompression) {
         lib.addAssemblyFile(.{ .path = "lib/decompress/huf_decompress_amd64.S" });
-        lib.addCSourceFiles(&decompress_sources, &.{});
+        lib.addCSourceFiles(.{ .files = &decompress_sources });
     }
     if (enable_dictbuilder) {
-        lib.addCSourceFiles(&dictbuilder_sources, &.{});
+        lib.addCSourceFiles(.{ .files = &dictbuilder_sources });
     }
     b.installArtifact(lib);
 
@@ -57,7 +57,7 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     zstdcli.linkLibrary(lib);
-    zstdcli.addCSourceFiles(&cli_sources, &.{});
+    zstdcli.addCSourceFiles(.{ .files = &cli_sources });
     b.installArtifact(zstdcli);
 
     const run = b.addRunArtifact(zstdcli);
