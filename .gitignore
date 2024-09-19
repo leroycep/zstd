@@ -36,6 +36,8 @@ bin/
 buck-out/
 build-*
 *.gcda
+/.zig-cache
+/zig-out
 
 # Other files
 .directory

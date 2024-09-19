@@ -20,18 +20,8 @@ pub fn build(b: *std.Build) !void {
     });
     lib.linkLibC();
     lib.addCSourceFiles(.{ .files = &common_sources });
-    lib.installHeadersDirectoryOptions(.{
-        .source_dir = .{ .path = "lib/legacy" },
-        .install_dir = .header,
-        .install_subdir = "",
-        .exclude_extensions = &.{
-            ".c",
-        },
-    });
-    lib.installHeadersDirectoryOptions(.{
-        .source_dir = .{ .path = "lib" },
-        .install_dir = .header,
-        .install_subdir = "",
+    lib.installHeadersDirectory(b.path("lib/legacy"), "", .{});
+    lib.installHeadersDirectory(b.path("lib"), "", .{
         .exclude_extensions = &.{
             "LICENSE",
             "Makefile",
@@ -43,7 +33,7 @@ pub fn build(b: *std.Build) !void {
         lib.addCSourceFiles(.{ .files = &compress_sources });
     }
     if (enable_decompression) {
-        lib.addAssemblyFile(.{ .path = "lib/decompress/huf_decompress_amd64.S" });
+        lib.addAssemblyFile(b.path("lib/decompress/huf_decompress_amd64.S"));
         lib.addCSourceFiles(.{ .files = &decompress_sources });
     }
     if (enable_dictbuilder) {
